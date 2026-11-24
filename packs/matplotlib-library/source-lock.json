@@ -1,0 +1,21 @@
+{
+  "termuxCommit": "6be420e7536d1e228f3ffee2eb74ca2736a73fc1",
+  "python": "3.14.6",
+  "numpy": "2.5.4",
+  "matplotlib": "3.11.2",
+  "patches": {
+    "matplotlib-agg-pillow.patch": "a69de8fde2343e845e7e6e24b6dc2a9f9f6449cc58d40d4815606d4e75408047",
+    "matplotlib-harfbuzz-agg.patch": "add0a5330a982c996d8a46f0d45a492750d1926c2bef7051d32dc5b10e427541",
+    "matplotlib-harfbuzz-no-cairo.patch": "d0374ab9d9747d2b1fb4fa9d1865bfa19bd857e1df18c6fdefe14c1995aca346",
+    "matplotlib-harfbuzz-no-gir.patch": "7717bdd3a1cfffb8012121158bf69c96862c5bdc408af51e170d08cc56c9f519",
+    "matplotlib-pybind11-headers.patch": "fb217fe231705393f067bede400c303e53942f701d70d61207dc3aea039edba2"
+  },
+  "pureWheels": {
+    "cycler-0.12.1-py3-none-any.whl": "85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30",
+    "fonttools-4.60.1-py3-none-any.whl": "906306ac7afe2156fcf0042173d6ebbb05416af70f6b370967b47f8f00103bbb",
+    "packaging-25.0-py3-none-any.whl": "29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484",
+    "pyparsing-3.2.5-py3-none-any.whl": "e38a4f02064cf41fe6593d328d0512495ad1f3d8a91c4f73fc401b3079a59a5e",
+    "python_dateutil-2.9.0.post0-py2.py3-none-any.whl": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427",
+    "six-1.17.0-py2.py3-none-any.whl": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
+  }
+}

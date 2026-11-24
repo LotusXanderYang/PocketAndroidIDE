@@ -11,6 +11,12 @@
 
 ## GPL/LGPL 涉及的源码入口
 
+本次可选科学计算库的构建记录位于 `packs/numpy-library/src/main/assets/source-lock.json` 和 `packs/matplotlib-library/src/main/assets/source-lock.json`。NumPy 从上述固定运行时归档派生；Matplotlib 使用同一 Termux 提交构建，附加补丁保存在 `packaging/termux/matplotlib-*.patch`。
+
+`tools/build-scientific-libraries.sh`、`tools/export-matplotlib-runtime.py` 和 `tools/package-numpy-library.py` 提供构建及导出步骤。Termux 对应提交的 `packages/<包名>/build.sh` 记录上游源码 URL、版本、摘要与补丁；Matplotlib 使用的 6 个纯 Python wheel 另锁定在 `tools/matplotlib-pure-wheels.lock.json`。库 APK 在 `assets/licenses/` 中保留原始声明，Python 发行物自己的许可也保留在库载荷的 `.dist-info` 中。
+
+新增原生依赖包含 OpenBLAS、Qhull、FreeType、HarfBuzz、GLib、Graphite2、FriBidi、Raqm、libjpeg-turbo、libpng、Brotli、libiconv、PCRE2 和 XCB 等。确切依赖闭包与预加载顺序以载荷清单、固定配方和导出脚本为准。通用模板及其 MIT 许可不替代这些依赖的原始许可。字体、图像数据与 Python 依赖同样应保留其声明。
+
 下表列出锁定运行时中需要特别保持源码获取路径的组件。精确版本和归档哈希以各包清单为准；下列上游源码和 Termux 配方、补丁应与 Release 标签中的构建脚本一起使用。
 
 | 组件 | 上游源码入口 | 构建配方与补丁 |

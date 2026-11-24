@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:allowBackup="false" android:label="Matplotlib + NumPy">
+        <activity android:name="android.app.Activity" android:exported="true">
+            <intent-filter><action android:name="org.pocketide.python.library.v1.LIBRARY" />
+                <category android:name="android.intent.category.DEFAULT" /></intent-filter>
+        </activity>
+    </application>
+</manifest>

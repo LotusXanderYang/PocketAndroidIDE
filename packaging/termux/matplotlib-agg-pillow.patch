@@ -1,0 +1,11 @@
+--- a/packages/python-pillow/build.sh
++++ b/packages/python-pillow/build.sh
+@@ -7,7 +7,7 @@
+ TERMUX_PKG_SRCURL="https://github.com/python-pillow/Pillow/archive/refs/tags/${TERMUX_PKG_VERSION}.tar.gz"
+ TERMUX_PKG_SHA256=edf59ba26a21ea6d7e6a3755fe139a57297704591c4113ad470dac9ac2ccaf5e
+ TERMUX_PKG_AUTO_UPDATE=true
+-TERMUX_PKG_DEPENDS="freetype, libavif, libimagequant, libjpeg-turbo, libraqm, libtiff, libwebp, libxcb, littlecms, openjpeg, python, python-pip, zlib"
++TERMUX_PKG_DEPENDS="freetype, libjpeg-turbo, libraqm, python, python-pip, zlib"
+ TERMUX_PKG_SETUP_PYTHON=true
+ TERMUX_PKG_BUILD_IN_SRC=true
+ 

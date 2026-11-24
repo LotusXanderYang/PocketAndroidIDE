@@ -4,6 +4,7 @@ import android.content.Context;
 
 import org.json.JSONObject;
 import org.pocketide.python.RuntimeInstaller;
+import org.pocketide.python.PythonLibraries;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,7 +41,9 @@ public final class NativePythonBridge {
                     + "    with open(" + quote(diagnostic.getAbsolutePath())
                     + ", 'w', encoding='utf-8') as log:\n"
                     + "        log.write(traceback.format_exc())\n";
-            int code = run(script.getBytes(StandardCharsets.UTF_8));
+            script = "with _pocket_library_scope['library_paths'](_pocket_library_paths, _pocket_library_cache):\n"
+                    + "    " + script.replace("\n", "\n    ");
+            int code = run((libraryBootstrap(context, command) + script).getBytes(StandardCharsets.UTF_8));
             if (code != 0 || !output.isFile()) {
                 String detail = diagnostic.isFile()
                         ? new String(Files.readAllBytes(diagnostic.toPath()), StandardCharsets.UTF_8)
@@ -100,7 +103,9 @@ public final class NativePythonBridge {
                     + "    with open(" + quote(diagnostic.getAbsolutePath())
                     + ", 'w', encoding='utf-8') as log:\n"
                     + "        log.write(traceback.format_exc())\n";
-            int code = run(script.getBytes(StandardCharsets.UTF_8));
+            script = "with _pocket_library_scope['library_paths'](_pocket_library_paths, _pocket_library_cache):\n"
+                    + "    " + script.replace("\n", "\n    ");
+            int code = run((libraryBootstrap(context, command) + script).getBytes(StandardCharsets.UTF_8));
             if (code != 0 || !output.isFile()) {
                 String detail = diagnostic.isFile()
                         ? new String(Files.readAllBytes(diagnostic.toPath()), StandardCharsets.UTF_8)
@@ -115,6 +120,22 @@ public final class NativePythonBridge {
             Files.deleteIfExists(output.toPath());
             Files.deleteIfExists(diagnostic.toPath());
         }
+    }
+
+    private static String libraryBootstrap(Context context, JSONObject command) throws Exception {
+        String support;
+        try (InputStream input = context.getAssets().open("python_library_support.py")) {
+            java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[8192]; int n;
+            while ((n = input.read(buffer)) != -1) bytes.write(buffer, 0, n);
+            support = new String(bytes.toByteArray(), StandardCharsets.UTF_8);
+        }
+        org.json.JSONArray paths = command.optJSONArray("libraryPaths");
+        if (paths == null) paths = PythonLibraries.enabledPaths(context);
+        return "import json\n_pocket_library_cache = " + quote(context.getCacheDir().getAbsolutePath())
+                + "\n_pocket_library_scope = {}\nexec(" + quote(support)
+                + ", _pocket_library_scope)\n_pocket_library_paths = json.loads("
+                + quote(paths.toString()) + ")\n";
     }
 
     private static String quote(String text) {

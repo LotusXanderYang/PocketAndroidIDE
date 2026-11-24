@@ -1,6 +1,6 @@
 # Language Pack API v1（阶段 3 原型）
 
-本目录是独立 Android APK 语言包的接口规范。当前 IDE 应用版本为 `0.2.0-alpha.2`，最低 API 26；包清单的 `minHostVersion` 仍固定为 `0.2.0-alpha.1`，作为 API v1 兼容基线，不应改填 IDE 的发行版本。`pack-sdk/` 提供源码模块与调试 AAR，`sample-pack/` 是无原生工具链的 `.echo` 示例。示例在 ARM64 的 MAG-AN00（API 36）上通过阶段 3 实机验收；范围与证据见 [验证记录](VALIDATION.md)。
+本目录是独立 Android APK 语言包的接口规范。当前 IDE 应用版本为 `0.3.0-alpha.1`，最低 API 26；包清单的 `minHostVersion` 仍固定为 `0.2.0-alpha.1`，作为 API v1 兼容基线，不应改填 IDE 的发行版本。`pack-sdk/` 提供源码模块与调试 AAR，`sample-pack/` 是无原生工具链的 `.echo` 示例。示例在 ARM64 的 MAG-AN00（API 36）上通过阶段 3 实机验收；范围与证据见 [验证记录](VALIDATION.md)。
 
 ## 安装、发现与信任
 
@@ -51,7 +51,7 @@ ITaskCallback.finished(Bundle result)  // oneway，恰好一次
 
 ## 版本、索引与发布
 
-`schemaVersion=1` 和 AIDL `protocolVersion=1` 必须同时匹配。当前 IDE 虽为 `0.2.0-alpha.2`，仍仅接受 `minHostVersion=0.2.0-alpha.1`，避免把预发行版本误判为兼容；后续宿主放宽时仍须保持 v1 字段语义。新必填字段或改变 Bundle 字段含义须提升协议主版本并提供迁移说明。包升级后版本字段改变会撤销能力验证；签名改变会撤销启用。当前同一时刻只启用一个可执行包，切换语言包需重新选择并验证。
+`schemaVersion=1` 和 AIDL `protocolVersion=1` 必须同时匹配。当前 IDE 虽为 `0.3.0-alpha.1`，仍仅接受 `minHostVersion=0.2.0-alpha.1`，避免把预发行版本误判为兼容；后续宿主放宽时仍须保持 v1 字段语义。新必填字段或改变 Bundle 字段含义须提升协议主版本并提供迁移说明。包升级后版本字段改变会撤销能力验证；签名改变会撤销启用。当前同一时刻只启用一个可执行包，切换语言包需重新选择并验证。
 
 [静态索引 Schema](static-index.schema.json) 另记发布后的 APK HTTPS 链接、SHA-256、签名证书 SHA-256 和字节数。它只是下载目录，不是权限来源。包内清单不含自身 APK 哈希，避免自引用。示例索引中的 `a…`、`b…` 是 Schema 测试占位值，**不是可发布的真实哈希**。正式发布时必须用实际签名 APK 的摘要替换，并核对包内清单与索引的 ID、版本、ABI 和许可证。
 

@@ -1,0 +1,23 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'org.pocketide.library.numpy'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'org.pocketide.library.numpy'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '2.5.4-candidate.1'
+    }
+}
+
+tasks.register('verifyNumpyPayload') {
+    doLast {
+        def manifest = new groovy.json.JsonSlurper().parse(file('src/main/assets/python-library.json'))
+        def actual = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(file('src/main/assets/library.zip').bytes).encodeHex().toString()
+        if (actual != manifest.sha256 || manifest.packId != android.defaultConfig.applicationId)
+            throw new GradleException('NumPy payload or package ID mismatch')
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'verifyNumpyPayload' }

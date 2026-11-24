@@ -1,0 +1,26 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'org.pocketide.library.demo'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'org.pocketide.library.demo'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+}
+
+tasks.register('verifyLibraryPayload') {
+    doLast {
+        def manifest = new groovy.json.JsonSlurper().parse(file('src/main/assets/python-library.json'))
+        def source = new groovy.json.JsonSlurper().parse(file('library.json'))
+        def expected = manifest.remove('sha256')
+        if (manifest != source || source.packId != android.defaultConfig.applicationId)
+            throw new GradleException('Library manifest differs; rerun tools/package-python-library.py')
+        def actual = java.security.MessageDigest.getInstance('SHA-256')
+            .digest(file('src/main/assets/library.zip').bytes).encodeHex().toString()
+        if (actual != expected) throw new GradleException('Library payload SHA mismatch')
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'verifyLibraryPayload' }

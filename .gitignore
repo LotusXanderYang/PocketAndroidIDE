@@ -30,3 +30,9 @@ tools/inspect-wsl-boot.ps1
 tools/resume-modern-runtime-build.sh
 tools/run-modern-runtime-build.sh
 
+
+packs/numpy-library/src/main/assets/library.zip
+
+packs/matplotlib-library/src/main/assets/library.zip
+packs/python-library-template/src/main/assets/library.zip
+artifacts/

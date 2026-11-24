@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "packId": "com.example.pocketpythonstd",
-  "version": "0.1.0-stage8",
+  "version": "0.2.0-libraries.5",
   "minHostVersion": "0.2.0-alpha.1",
   "minSdk": 26,
   "supportedAbis": ["arm64-v8a"],

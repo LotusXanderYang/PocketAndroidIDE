@@ -184,6 +184,12 @@ public final class IdeActivity extends WorkbenchActivity {
         for (int i = 0; i < found.size(); i++)
             names[i + 1] = found.get(i).displayName() + "  " + found.get(i).version();
         new AlertDialog.Builder(this).setTitle("语言包")
+                .setNeutralButton("Python 库扩展", (d, w) -> {
+                    try { startActivity(new android.content.Intent().setClassName(
+                        "com.example.pocketpythonstd", "org.pocketide.python.PythonInfoActivity")); }
+                    catch (Exception e) { new AlertDialog.Builder(this).setMessage(
+                        "请先安装支持库扩展的 Python 语言包").setPositiveButton("关闭", null).show(); }
+                })
                 .setItems(names, (dialog, which) -> {
                     if (which == 0) {
                         if (active != null) new AlertDialog.Builder(this).setTitle("禁用语言包")

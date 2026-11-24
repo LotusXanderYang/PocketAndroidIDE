@@ -1,0 +1,21 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'org.pocketide.library.matplotlib'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'org.pocketide.library.matplotlib'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '3.11.2-candidate.1'
+    }
+}
+tasks.register('verifyPayload') {
+    doLast {
+        def manifest = new groovy.json.JsonSlurper().parse(file('src/main/assets/python-library.json'))
+        def actual = java.security.MessageDigest.getInstance('SHA-256').digest(file('src/main/assets/library.zip').bytes).encodeHex().toString()
+        if (manifest.sha256 != actual || manifest.packId != android.defaultConfig.applicationId)
+            throw new GradleException('Matplotlib payload mismatch')
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'verifyPayload' }

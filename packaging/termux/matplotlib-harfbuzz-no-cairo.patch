@@ -1,0 +1,19 @@
+--- a/packages/harfbuzz/build.sh
++++ b/packages/harfbuzz/build.sh
+@@ -6,7 +6,7 @@
+ TERMUX_PKG_SRCURL=https://github.com/harfbuzz/harfbuzz/archive/refs/tags/${TERMUX_PKG_VERSION}.tar.gz
+ TERMUX_PKG_SHA256=eca8581e5ad8e21dbda31556c0363f764b1a754c9c1bb33ca7cd56ca1c07ddc9
+ TERMUX_PKG_AUTO_UPDATE=true
+-TERMUX_PKG_DEPENDS="freetype, glib, libcairo, libgraphite"
++TERMUX_PKG_DEPENDS="freetype, glib, libgraphite"
+ TERMUX_PKG_BUILD_DEPENDS="glib-cross"
+ TERMUX_PKG_BREAKS="harfbuzz-dev"
+ TERMUX_PKG_REPLACES="harfbuzz-dev"
+@@ -15,6 +15,7 @@
+ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
+ -Dcpp_std=c++17
+ -Ddocs=disabled
++-Dcairo=disabled
+ -Dgobject=enabled
+ -Dgraphite=enabled
+ -Dintrospection=disabled

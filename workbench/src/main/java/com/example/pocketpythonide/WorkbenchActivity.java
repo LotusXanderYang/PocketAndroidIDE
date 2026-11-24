@@ -197,6 +197,7 @@ public abstract class WorkbenchActivity extends Activity {
     private final ExecutorService fileWorker = Executors.newSingleThreadExecutor();
     private final ExecutorService wallpaperWorker = Executors.newSingleThreadExecutor();
     private final ExecutorService completionWorker = Executors.newSingleThreadExecutor();
+    private ImagePreview imagePreview;
     private Future<?> activeRun;
     private AtomicBoolean activeCancellation;
     private AtomicBoolean activeSync;
@@ -218,6 +219,7 @@ public abstract class WorkbenchActivity extends Activity {
     private TextView capabilityView;
     private int sidebarWidthDp = 242, consoleHeightDp = 230;
     private String consoleTab = "输出";
+    private final TextView[] consoleTabViews = new TextView[4];
     private final ArrayList<String> buildRecords = new ArrayList<>();
     private String lastOutput = "", lastProblem = "尚无问题";
     private String activeBuildName;
@@ -458,7 +460,7 @@ public abstract class WorkbenchActivity extends Activity {
                     insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
             return insets;
         });
-        page.addView(buildModernToolbar(), size(-1, dp(52)));
+        page.addView(buildModernToolbar(), size(-1, dp(56)));
         page.addView(divider(false));
         LinearLayout body = row(EDITOR);
         FrameLayout sidebarContainer = new FrameLayout(this);
@@ -482,7 +484,7 @@ public abstract class WorkbenchActivity extends Activity {
         work.addView(consolePane, size(-1, dp(consoleHeightDp)));
         body.addView(work, new LinearLayout.LayoutParams(0, -1, 1));
         page.addView(body, new LinearLayout.LayoutParams(-1, 0, 1));
-        page.addView(buildStatusBar(), size(-1, dp(31)));
+        page.addView(buildStatusBar(), size(-1, dp(compact ? 48 : 31)));
         setContentView(page);
         if (compact) {
             sidebar.setVisibility(View.GONE);
@@ -522,28 +524,35 @@ public abstract class WorkbenchActivity extends Activity {
         commandCenter = toolbarAction("工作区 / 文件", v -> promptOpen());
         commandCenter.setSingleLine(true);
         commandCenter.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        commandCenter.setBackground(rounded(SIDEBAR, 5));
-        LinearLayout.LayoutParams commandSize = new LinearLayout.LayoutParams(0, dp(36), 1);
+        commandCenter.setTextColor(MUTED);
+        commandCenter.setContentDescription("快速打开文件");
+        GradientDrawable commandBackground = rounded(SIDEBAR, 8);
+        commandBackground.setStroke(dp(1), BORDER);
+        commandCenter.setBackground(commandBackground);
+        LinearLayout.LayoutParams commandSize = new LinearLayout.LayoutParams(0, dp(40), 1);
         commandSize.leftMargin = dp(6);
         commandSize.rightMargin = dp(6);
         bar.addView(commandCenter, commandSize);
-        bar.addView(toolbarAction("搜索", v -> promptProjectSearch()), size(-2, -1));
+        if (!compact) bar.addView(toolbarAction("搜索", v -> promptProjectSearch()), size(-2, -1));
         if (!compact) bar.addView(toolbarAction("构建", v -> buildCurrent()), size(-2, -1));
         runButton = toolbarAction("运行", v -> runScript());
-        runButton.setBackground(rounded(ACCENT, 5));
+        runButton.setBackground(rounded(ACCENT, 8));
         runButton.setTextColor(Color.WHITE);
         bar.addView(runButton, size(-2, -1));
         bar.addView(toolbarAction("调试", v -> debugCurrent()), size(-2, -1));
-        capabilityView = toolbarAction("仅编辑", v -> showLanguagePacks());
-        bar.addView(capabilityView, size(-2, -1));
+        if (!compact) {
+            capabilityView = toolbarAction("仅编辑", v -> showLanguagePacks());
+            bar.addView(capabilityView, size(-2, -1));
+        }
         bar.addView(toolbarAction("设置", v -> showSettings()), size(-2, -1));
         return bar;
     }
 
     private TextView toolbarAction(String title, View.OnClickListener click) {
-        TextView view = label(title, 12, TEXT, false);
+        TextView view = label(title, 13, TEXT, false);
         view.setGravity(Gravity.CENTER);
         view.setPadding(dp(10), 0, dp(10), 0);
+        view.setMinHeight(dp(48));
         view.setContentDescription(title);
         interactive(view, click);
         return view;
@@ -695,12 +704,22 @@ public abstract class WorkbenchActivity extends Activity {
             bar.setPadding(dp(14), 0, dp(14), 0);
             TextView tasks = label("任务 / 问题", 11, MUTED, false);
             interactive(tasks, v -> showTasks());
-            bar.addView(tasks);
+            bar.addView(tasks, size(-2, -1));
+            if (compact) {
+                capabilityView = label("仅编辑", 11, TEXT, true);
+                capabilityView.setGravity(Gravity.CENTER);
+                capabilityView.setPadding(dp(12), 0, dp(12), 0);
+                capabilityView.setContentDescription("语言包状态，点按查看语言包");
+                interactive(capabilityView, v -> showLanguagePacks());
+                bar.addView(capabilityView, size(-2, -1));
+            }
             bar.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1));
             cursorView = label("行 1，列 1", 11, MUTED, false);
             bar.addView(cursorView);
-            TextView details = label("  ·  UTF-8  ·  4 空格", 11, MUTED, false);
-            bar.addView(details);
+            if (!compact) {
+                TextView details = label("  ·  UTF-8  ·  4 空格", 11, MUTED, false);
+                bar.addView(details);
+            }
             return bar;
         }
         LinearLayout bar = row(ACCENT);
@@ -1566,14 +1585,14 @@ public abstract class WorkbenchActivity extends Activity {
                     }
                 });
                 if ("搜索".equals(title)) section.setContentDescription("项目搜索");
-                sections.addView(section, new LinearLayout.LayoutParams(0, dp(40), 1));
+                sections.addView(section, new LinearLayout.LayoutParams(0, dp(48), 1));
             }
             panel.addView(sections);
             panel.addView(divider(false));
         }
         LinearLayout header = row(SIDEBAR);
         header.setGravity(Gravity.CENTER_VERTICAL);
-        TextView heading = label(modernUi() ? "工作区文件" : "资源管理器", 12, TEXT, true);
+        TextView heading = label(modernUi() ? "工作区文件" : "资源管理器", 13, TEXT, true);
         heading.setGravity(Gravity.CENTER_VERTICAL);
         heading.setPadding(dp(14), 0, 0, 0);
         header.addView(heading, new LinearLayout.LayoutParams(0, -1, 1));
@@ -1592,8 +1611,8 @@ public abstract class WorkbenchActivity extends Activity {
             });
             menu.show();
         });
-        header.addView(more, size(dp(40), -1));
-        panel.addView(header, size(-1, dp(42)));
+        header.addView(more, size(dp(modernUi() ? 48 : 40), -1));
+        panel.addView(header, size(-1, dp(modernUi() ? 48 : 42)));
         LinearLayout folderRow = row(SIDEBAR);
         folderRow.setGravity(Gravity.CENTER_VERTICAL);
         TextView folder = label("⌄  scripts", 12, TEXT, true);
@@ -1604,8 +1623,8 @@ public abstract class WorkbenchActivity extends Activity {
         add.setGravity(Gravity.CENTER);
         add.setContentDescription("新建脚本");
         interactive(add, v -> promptNew());
-        folderRow.addView(add, size(dp(36), -1));
-        panel.addView(folderRow, size(-1, dp(32)));
+        folderRow.addView(add, size(dp(modernUi() ? 48 : 36), -1));
+        panel.addView(folderRow, size(-1, dp(modernUi() ? 48 : 32)));
         ScrollView fileScroll = new ScrollView(this);
         fileScroll.setFillViewport(true);
         fileScroll.setVerticalScrollBarEnabled(true);
@@ -1620,19 +1639,19 @@ public abstract class WorkbenchActivity extends Activity {
             TextView task = label("任务与最近结果", 12, TEXT, true);
             task.setPadding(dp(16), dp(12), 0, dp(12));
             interactive(task, v -> showTasks());
-            panel.addView(task, size(-1, dp(40)));
+            panel.addView(task, size(-1, dp(48)));
         }
         TextView outline = label("›  大纲", 12, TEXT, true);
         outline.setGravity(Gravity.CENTER_VERTICAL);
         outline.setPadding(dp(16), 0, 0, 0);
         interactive(outline, v -> showOutline());
-        panel.addView(outline, size(-1, dp(35)));
+        panel.addView(outline, size(-1, dp(modernUi() ? 48 : 35)));
         panel.addView(divider(false));
         TextView timeline = label("›  时间线", 12, TEXT, true);
         timeline.setGravity(Gravity.CENTER_VERTICAL);
         timeline.setPadding(dp(16), 0, 0, 0);
         interactive(timeline, v -> showHistory());
-        panel.addView(timeline, size(-1, dp(35)));
+        panel.addView(timeline, size(-1, dp(modernUi() ? 48 : 35)));
         return panel;
     }
 
@@ -1778,8 +1797,8 @@ public abstract class WorkbenchActivity extends Activity {
         tabBar.addView(tabScroll, new LinearLayout.LayoutParams(0, -1, 1));
         TextView add = toolbarAction("＋", v -> promptNew());
         add.setContentDescription("新建文件");
-        tabBar.addView(add, size(dp(42), -1));
-        pane.addView(tabBar, size(-1, dp(39)));
+        tabBar.addView(add, size(dp(48), -1));
+        pane.addView(tabBar, size(-1, dp(48)));
         pane.addView(divider(false));
         debugControls = createDebugControls();
         if (debugControls != null) {
@@ -1844,11 +1863,17 @@ public abstract class WorkbenchActivity extends Activity {
         LinearLayout pane = column(SURFACE);
         LinearLayout heading = row(SURFACE);
         heading.setGravity(Gravity.CENTER_VERTICAL);
-        for (String name : new String[]{"输出", "问题", "构建记录", "调试"}) {
+        String[] consoleTabs = {"输出", "问题", "构建记录", "调试"};
+        for (int index = 0; index < consoleTabs.length; index++) {
+            String name = consoleTabs[index];
             TextView item = toolbarAction("调试".equals(name) ? "调试控制台" : name,
                     v -> showConsoleTab(name));
+            consoleTabViews[index] = item;
             heading.addView(item, size(-2, -1));
         }
+        consoleTabViews[0].setSelected(true);
+        consoleTabViews[0].setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        consoleTabViews[0].setBackground(rounded(EDITOR, 6));
         heading.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1));
         consoleState = label("就绪", 11, MUTED, false);
         heading.addView(consoleState);
@@ -1862,7 +1887,7 @@ public abstract class WorkbenchActivity extends Activity {
             }
         }), size(-2, -1));
         heading.addView(toolbarAction("关闭", v -> toggleConsole()), size(-2, -1));
-        pane.addView(heading, size(-1, dp(40)));
+        pane.addView(heading, size(-1, dp(48)));
         pane.addView(divider(false));
         consoleOutputScroll = new ScrollView(this);
         consoleOutputScroll.setFillViewport(true);
@@ -1882,6 +1907,18 @@ public abstract class WorkbenchActivity extends Activity {
 
     private void showConsoleTab(String name) {
         consoleTab = name;
+        if (modernUi()) {
+            String[] names = {"输出", "问题", "构建记录", "调试"};
+            for (int index = 0; index < names.length; index++) {
+                TextView item = consoleTabViews[index];
+                if (item == null) continue;
+                boolean selected = names[index].equals(name);
+                item.setSelected(selected);
+                item.setTextColor(selected ? TEXT : MUTED);
+                item.setTypeface(Typeface.DEFAULT, selected ? Typeface.BOLD : Typeface.NORMAL);
+                item.setBackground(selected ? rounded(EDITOR, 6) : null);
+            }
+        }
         if (consolePane.getVisibility() != View.VISIBLE) toggleConsole();
         if (modernUi() && debugPanel != null && consolePane.getLayoutParams() != null) {
             int debugHeight = Math.min(Math.max(consoleHeightDp, 340),
@@ -1956,9 +1993,9 @@ public abstract class WorkbenchActivity extends Activity {
                     boolean active = entry.path.equals(filename);
                     LinearLayout itemRow = row(SIDEBAR);
                     itemRow.setGravity(Gravity.CENTER_VERTICAL);
-                    if (active) itemRow.setBackground(rounded(modernUi() ?
-                            Color.argb(42, Color.red(ACCENT), Color.green(ACCENT), Color.blue(ACCENT))
-                            : Color.rgb(55, 55, 61), 4));
+                    if (active) itemRow.setBackground(modernUi() ? selectedFileBackground()
+                            : rounded(Color.rgb(55, 55, 61), 4));
+                    itemRow.setSelected(active);
                     int depth = entry.path.split("/").length - 1;
                     String symbol = entry.directory
                             ? (expandedFolders.contains(entry.path) ? "⌄" : "›")
@@ -1980,6 +2017,8 @@ public abstract class WorkbenchActivity extends Activity {
                             currentFolder = entry.path;
                             if (!expandedFolders.add(entry.path)) expandedFolders.remove(entry.path);
                             refreshFiles();
+                        } else if (modernUi() && ImagePreview.supports(entry.path)) {
+                            previewImage(entry.path);
                         } else if (!entry.path.equals(filename) && saveScript(false)) {
                             if (editableFile(entry.path)) loadScript(entry.path);
                             else showError("该文件不是受支持的文本类型，无法在编辑器中打开");
@@ -1987,7 +2026,7 @@ public abstract class WorkbenchActivity extends Activity {
                         }
                     });
                     if (modernUi() && !entry.directory) attachFileActions(itemRow, entry.path);
-                    LinearLayout.LayoutParams rowSize = size(-1, dp(modernUi() ? 40 : 31));
+                    LinearLayout.LayoutParams rowSize = size(-1, dp(modernUi() ? 48 : 31));
                     rowSize.leftMargin = dp(7);
                     rowSize.rightMargin = dp(7);
                     fileList.addView(itemRow, rowSize);
@@ -1999,16 +2038,17 @@ public abstract class WorkbenchActivity extends Activity {
     }
 
     private void renderLocalFiles() {
-        String[] names = scriptsDir.list((dir, name) -> localFile(name));
+        String[] names = scriptsDir.list((dir, name) -> localFile(name)
+                || modernUi() && ImagePreview.supports(name));
         if (names == null) return;
         Arrays.sort(names);
         for (String name : names) {
             boolean active = name.equals(filename);
             LinearLayout row = row(SIDEBAR);
             row.setGravity(Gravity.CENTER_VERTICAL);
-            if (active) row.setBackground(rounded(modernUi() ?
-                    Color.argb(42, Color.red(ACCENT), Color.green(ACCENT), Color.blue(ACCENT))
-                    : Color.rgb(55, 55, 61), 4));
+            if (active) row.setBackground(modernUi() ? selectedFileBackground()
+                    : rounded(Color.rgb(55, 55, 61), 4));
+            row.setSelected(active);
             TextView icon = label(modernUi() ? fileMark(name) : "Py", 11,
                     modernUi() ? ACCENT : Color.rgb(207, 164, 83), true);
             icon.setGravity(Gravity.CENTER);
@@ -2021,11 +2061,12 @@ public abstract class WorkbenchActivity extends Activity {
             item.setPadding(dp(2), 0, dp(8), 0);
             row.addView(item, new LinearLayout.LayoutParams(0, -1, 1));
             interactive(row, v -> {
-                if (!name.equals(filename) && saveScript(false)) loadScript(name);
+                if (modernUi() && ImagePreview.supports(name)) previewImage(name);
+                else if (!name.equals(filename) && saveScript(false)) loadScript(name);
                 if (compact) toggleSidebar();
             });
             if (modernUi()) attachFileActions(row, name);
-            LinearLayout.LayoutParams itemSize = size(-1, dp(modernUi() ? 40 : 31));
+            LinearLayout.LayoutParams itemSize = size(-1, dp(modernUi() ? 48 : 31));
             itemSize.leftMargin = dp(7);
             itemSize.rightMargin = dp(7);
             fileList.addView(row, itemSize);
@@ -2258,6 +2299,14 @@ public abstract class WorkbenchActivity extends Activity {
         return drawable;
     }
 
+    private GradientDrawable selectedFileBackground() {
+        GradientDrawable background = rounded(Color.argb(60, Color.red(ACCENT),
+                Color.green(ACCENT), Color.blue(ACCENT)), 8);
+        background.setStroke(dp(1), Color.argb(150, Color.red(ACCENT),
+                Color.green(ACCENT), Color.blue(ACCENT)));
+        return background;
+    }
+
     private LinearLayout.LayoutParams size(int width, int height) {
         return new LinearLayout.LayoutParams(width, height);
     }
@@ -2293,13 +2342,17 @@ public abstract class WorkbenchActivity extends Activity {
         for (String name : new ArrayList<>(openTabs)) {
             LinearLayout tab = row(name.equals(filename) ? EDITOR : SURFACE);
             tab.setGravity(Gravity.CENTER_VERTICAL);
+            boolean active = name.equals(filename);
             TextView title = toolbarAction(name.substring(name.lastIndexOf('/') + 1), v -> {
                 if (!name.equals(filename) && saveScript(false)) loadScript(name, false);
             });
+            title.setTextColor(active ? TEXT : MUTED);
+            title.setTypeface(Typeface.DEFAULT, active ? Typeface.BOLD : Typeface.NORMAL);
+            tab.setSelected(active);
             tab.addView(title, size(-2, -1));
             TextView close = toolbarAction("×", v -> closeTab(name));
             close.setContentDescription("关闭 " + name);
-            tab.addView(close, size(dp(32), -1));
+            tab.addView(close, size(dp(48), -1));
             tabs.addView(tab, size(-2, -1));
             tabs.addView(divider(true));
         }
@@ -2340,7 +2393,8 @@ public abstract class WorkbenchActivity extends Activity {
         try {
             if (workspaceFiles != null) workspaceFiles.deleteFile(path);
             else {
-                if (path.contains("/") || path.contains("\\") || !localFile(path))
+                if (path.contains("/") || path.contains("\\")
+                        || !(localFile(path) || modernUi() && ImagePreview.supports(path)))
                     throw new IOException("无效的私有文件名");
                 Files.delete(scriptFile(path).toPath());
             }
@@ -2676,26 +2730,55 @@ public abstract class WorkbenchActivity extends Activity {
             try {
                 ArrayList<String> names = new ArrayList<>();
                 for (WorkspaceFiles.Entry entry : workspaceFiles.listTree())
-                    if (!entry.directory && editableFile(entry.path)) names.add(entry.path);
-                if (names.isEmpty()) { showError("工作区没有可打开的文本文件"); return; }
+                    if (!entry.directory && (editableFile(entry.path)
+                            || modernUi() && ImagePreview.supports(entry.path))) names.add(entry.path);
+                if (names.isEmpty()) { showError("工作区没有可打开的文件"); return; }
                 new AlertDialog.Builder(this).setTitle("打开工作区文件")
                         .setItems(names.toArray(new String[0]), (dialog, which) -> {
-                            if (saveScript(false)) { expandParents(names.get(which)); loadScript(names.get(which)); }
+                            String name = names.get(which);
+                            if (modernUi() && ImagePreview.supports(name)) previewImage(name);
+                            else if (saveScript(false)) { expandParents(name); loadScript(name); }
                         }).setNegativeButton("取消", null).show();
             } catch (IOException e) { showError("读取工作区失败：" + e.getMessage()); }
             return;
         }
-        String[] names = scriptsDir.list((dir, name) -> localFile(name));
+        String[] names = scriptsDir.list((dir, name) -> localFile(name)
+                || modernUi() && ImagePreview.supports(name));
         if (names == null || names.length == 0) { showError("没有可打开的脚本"); return; }
         Arrays.sort(names);
         new AlertDialog.Builder(this).setTitle("打开脚本")
-                .setItems(names, (dialog, which) -> { if (saveScript(false)) loadScript(names[which]); })
+                .setItems(names, (dialog, which) -> {
+                    if (modernUi() && ImagePreview.supports(names[which])) previewImage(names[which]);
+                    else if (saveScript(false)) loadScript(names[which]);
+                })
                 .setNegativeButton("取消", null).show();
     }
 
     private void loadScript(String name) { loadScript(name, true); }
 
+    private void previewImage(String name) {
+        if (imagePreview != null) imagePreview.close();
+        if (completions != null) completions.dismiss();
+        WorkspaceFiles selectedWorkspace = workspaceFiles;
+        ImagePreview.Source source = () -> {
+            if (selectedWorkspace == null) {
+                File file = scriptFile(name);
+                if (!file.getCanonicalPath().startsWith(scriptsDir.getCanonicalPath() + File.separator))
+                    throw new IOException("图片路径不在当前工作区内");
+                if (file.length() > 32L * 1024 * 1024) throw new IOException("图片超过 32 MB 预览限制");
+                return new java.io.FileInputStream(file);
+            }
+            WorkspaceFiles.Entry entry = selectedWorkspace.find(name);
+            if (entry == null || entry.directory) throw new IOException("图片已删除或不再可访问");
+            if (entry.size > 32L * 1024 * 1024) throw new IOException("图片超过 32 MB 预览限制");
+            return getContentResolver().openInputStream(entry.uri);
+        };
+        imagePreview = new ImagePreview(this, name, source, EDITOR, TEXT);
+        imagePreview.show();
+    }
+
     private void loadScript(String name, boolean record) {
+        if (modernUi() && ImagePreview.supports(name)) { previewImage(name); return; }
         try {
             if (completions != null) completions.dismiss();
             byte[] bytes;
@@ -3196,6 +3279,7 @@ public abstract class WorkbenchActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if (imagePreview != null) imagePreview.close();
         editor.removeCallbacks(completionTask);
         if (pendingCompletion != null) pendingCompletion.cancel(true);
         if (pendingFileRefresh != null) pendingFileRefresh.cancel(true);

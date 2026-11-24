@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <queries><intent><action android:name="org.pocketide.python.library.v1.LIBRARY" /></intent></queries>
     <application android:allowBackup="false" android:label="Pocket Python 基础语言包">
         <activity android:name="org.pocketide.python.PythonInfoActivity"
-            android:exported="true">
+            android:exported="true" android:process=":python">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

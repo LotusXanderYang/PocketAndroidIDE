@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "packId",
+    "displayName",
+    "version",
+    "runtime",
+    "kind",
+    "imports",
+    "dependencies",
+    "source",
+    "license",
+    "sha256"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "packId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runtime": {
+      "enum": [
+        "cp314-pure-v1",
+        "cp314-native-aarch64-v1"
+      ]
+    },
+    "kind": {
+      "enum": [
+        "pure-python",
+        "android-native"
+      ]
+    },
+    "imports": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "source": {
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "preload": {
+      "type": "array",
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_+.-]+[.]so([.][0-9]+)*$"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "android-native"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "preload"
+        ],
+        "properties": {
+          "runtime": {
+            "const": "cp314-native-aarch64-v1"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "runtime": {
+            "const": "cp314-pure-v1"
+          }
+        },
+        "not": {
+          "required": [
+            "preload"
+          ]
+        }
+      }
+    }
+  ]
+}

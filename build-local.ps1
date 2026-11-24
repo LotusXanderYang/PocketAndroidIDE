@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('ide', 'sample', 'python', 'all')]
+    [ValidateSet('ide', 'sample', 'python', 'library', 'all')]
     [string]$Product = 'ide'
 )
 
@@ -28,6 +28,11 @@ if ($Product -eq 'python' -or $Product -eq 'all') {
     }
 }
 
+if ($Product -eq 'library' -or $Product -eq 'all') {
+    & python (Join-Path $projectRoot 'tools/package-python-library.py') (Join-Path $projectRoot 'packs/python-library-template')
+    if ($LASTEXITCODE -ne 0) { throw 'Python library packaging failed' }
+}
+
 $localGradle = Join-Path $toolchainRoot 'gradle-8.13/bin/gradle.bat'
 if (Test-Path $localGradle) {
     $env:GRADLE_USER_HOME = Join-Path $toolchainRoot 'gradle-home'
@@ -41,6 +46,7 @@ if ($Product -eq 'ide' -or $Product -eq 'all') { $gradleArgs += ':ide:assembleDe
 if ($Product -eq 'sample' -or $Product -eq 'all') { $gradleArgs += ':sample-pack:assembleDebug' }
 if ($Product -eq 'sample' -or $Product -eq 'all') { $gradleArgs += ':pack-probe:assembleDebug' }
 if ($Product -eq 'python' -or $Product -eq 'all') { $gradleArgs += ':packs:python:assembleDebug' }
+if ($Product -eq 'library' -or $Product -eq 'all') { $gradleArgs += ':packs:python-library-template:assembleDebug' }
 
 Push-Location $projectRoot
 try {
@@ -48,9 +54,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Gradle failed: $LASTEXITCODE" }
 } finally { Pop-Location }
 
-$modules = if ($Product -eq 'all') { @('ide', 'sample-pack', 'pack-probe', 'packs/python') }
+$modules = if ($Product -eq 'all') { @('ide', 'sample-pack', 'pack-probe', 'packs/python', 'packs/python-library-template') }
     elseif ($Product -eq 'sample') { @('sample-pack', 'pack-probe') } else { @($Product) }
 if ($Product -eq 'python') { $modules = @('packs/python') }
+if ($Product -eq 'library') { $modules = @('packs/python-library-template') }
 foreach ($module in $modules) {
     $apkName = Split-Path -Leaf $module
     $apk = Join-Path $projectRoot "$module/build/outputs/apk/debug/$apkName-debug.apk"

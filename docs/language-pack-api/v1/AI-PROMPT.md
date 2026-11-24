@@ -1,6 +1,6 @@
 # 第三方可执行语言包制包提示词 · API v1
 
-将尖括号变量填为真实信息，再连同本目录规范、`pack-sdk/`、`sample-pack/` 和 `tools/verify-language-pack.py` 交给 AI 编程助手。目标语言 `<名称>`，包 ID `<反向域名>`，上游工具链/解释器 `<版本及官方源码>`，项目 `<GitHub 仓库>`，目标设备 `<型号/API/ABI>`，课程任务 `<输入与预期输出>`，所需能力 `<逐项列出>`。当前 IDE 为 `0.2.0-alpha.2`，但 API v1 清单中的 `minHostVersion` 仍须为 `0.2.0-alpha.1`。
+将尖括号变量填为真实信息，再连同本目录规范、`pack-sdk/`、`sample-pack/` 和 `tools/verify-language-pack.py` 交给 AI 编程助手。目标语言 `<名称>`，包 ID `<反向域名>`，上游工具链/解释器 `<版本及官方源码>`，项目 `<GitHub 仓库>`，目标设备 `<型号/API/ABI>`，课程任务 `<输入与预期输出>`，所需能力 `<逐项列出>`。当前 IDE 为 `0.3.0-alpha.1`，但 API v1 清单中的 `minHostVersion` 仍须为 `0.2.0-alpha.1`。
 
 1. 先读 `docs/prompts/00-共同约束.md`、本目录 [README](README.md)、两个 JSON Schema、[可选调试通道](DEBUG.md)、AIDL 源码、示例服务与仓库 `AGENTS.md`。只读检查 Git 状态，保护既有未提交工作。列出已证实、待设备验证、不可行的能力；不得用 PC/Linux 原生程序冒充 Android 二进制。
 2. 创建**独立安装的 APK**，使用 `pack-sdk` 中的 `ILanguagePack` 与 `ITaskCallback`。Manifest 服务 action 固定为 `org.pocketide.pack.v1.LANGUAGE_PACK`，`meta-data` 名固定为 `org.pocketide.pack.v1.MANIFEST`。包内 JSON 必填：`schemaVersion=1`、`packId`、`version`、`minHostVersion=0.2.0-alpha.1`、`minSdk>=26`、`supportedAbis`、`languageIds`、`extensions`、`capabilities`、`entryService`、`source`、`license`、`dependencies`、`selfTests`。`initialize` 与 `cancel` 必须声明；每项声明能力给出能在目标设备运行的最小 `selfTests` 样例。声明 `run` 时另给 `largeOutput` 样例。

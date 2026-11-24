@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "packId": "org.pocketide.library.demo",
+  "displayName": "Pocket Demo Library",
+  "version": "1.0.0",
+  "runtime": "cp314-pure-v1",
+  "kind": "pure-python",
+  "imports": [
+    "pocket_demo"
+  ],
+  "dependencies": [],
+  "source": "https://github.com/LotusXanderYang/PocketPythonIDE",
+  "license": "MIT",
+  "sha256": "3cc9e4fae1775290c62409a8fb134a22b3159e96be97cbedae3c5f6cecd84a2b"
+}

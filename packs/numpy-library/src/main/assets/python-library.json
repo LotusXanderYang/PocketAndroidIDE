@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "packId": "org.pocketide.library.numpy",
+  "displayName": "NumPy",
+  "version": "2.5.4-candidate.1",
+  "runtime": "cp314-native-aarch64-v1",
+  "kind": "android-native",
+  "imports": [
+    "numpy"
+  ],
+  "dependencies": [],
+  "source": "https://numpy.org/",
+  "license": "BSD-3-Clause and bundled dependency licenses",
+  "sha256": "6f0bc1fc48b038dfed06e49fd606ac99badc3fd6510789452994435b09aea762",
+  "preload": [
+    "libopenblas.so",
+    "libc++_shared.so"
+  ]
+}

@@ -5,7 +5,7 @@
 Python 在包的 `:python` 进程与私有目录执行。基础 IDE APK 不含 Python 运行时。
 本包不含 PyTorch、NumPy 或 pip，不承诺任意 wheel 安装。
 
-先安装[通用 IDE](../../ide/README.md)，再从 [v0.2.0-alpha.1 Release](https://github.com/LotusXanderYang/PocketPythonIDE/releases/tag/v0.2.0-alpha.1) 下载本包；到 IDE“语言包”查看签名与权限，执行“验证并启用”“启用通过的能力”。版本、大小和 SHA-256 也列在[静态语言包目录](../../docs/language-pack-index.json)。卸载本包会删除其私有缓存；工作区文件仍属于 IDE 选择的 SAF 目录。
+先安装[通用 IDE](../../ide/README.md)，再从 [v0.3.0-alpha.1 Release](https://github.com/LotusXanderYang/PocketAndroidIDE/releases/tag/v0.3.0-alpha.1) 下载本包；到 IDE“语言包”查看签名与权限，执行“验证并启用”“启用通过的能力”。版本、大小和 SHA-256 也列在[静态语言包目录](../../docs/language-pack-index.json)。卸载本包会删除其私有缓存；工作区文件仍属于 IDE 选择的 SAF 目录。
 
 阶段 8 增加可选 DAP 调试通道，IDE 验证 `debug` 能力后可设置断点、单步、查看调用栈与局部变量，并在异常处暂停。适配器位于 `pocket_debug_adapter.py`，只使用 CPython 标准库；调试输入是工作区临时快照，写入不回传 SAF。MAG-AN00 实机结果和限制见[阶段 8 报告](../../docs/STAGE8-DEBUG-2026-10-27.md)。
 
@@ -26,3 +26,6 @@ Python 在包的 `:python` 进程与私有目录执行。基础 IDE APK 不含 P
 
 脚本里的 `input()` 会读取 `stdin`，`sys.argv` 会包含 `args`。兼容范围与设备证据见
 [`docs/python-pack-compatibility.md`](../../docs/python-pack-compatibility.md)。
+
+
+本版可安装并显式验证 Python 库 APK，支持纯 Python ZIP 和实验性的 Android ARM64 原生库。参见 [Python 库接口](../../docs/python-library-api/v1/README.md)。NumPy 计算与调试、Matplotlib PNG 输出已有用户实测；库更新和切换后需重新验证，原生库选择变化须重启 Python 进程。

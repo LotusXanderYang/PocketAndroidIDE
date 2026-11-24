@@ -49,6 +49,45 @@ public final class PythonPackService extends Service {
     private static volatile DebugTask activeDebug;
     private final Map<String, Task> tasks = new ConcurrentHashMap<>();
 
+    static java.util.concurrent.Future<String> verifyLibrary(android.content.Context context,
+            PythonLibraries.Library library) {
+        return PYTHON.submit(() -> {
+            if (DEBUG_BUSY.get()) throw new IOException("请先停止调试");
+            PythonLibraries.Library current = null;
+            for (PythonLibraries.Library item : PythonLibraries.discover(context))
+                if (item.id.equals(library.id)) current = item;
+            if (current == null || current.error != null
+                    || !library.identity.equals(current.identity))
+                throw new IOException("库已更新或卸载，请刷新后重新验证");
+            JSONArray paths = PythonLibraries.enabledPaths(context);
+            boolean present = false;
+            for (int i=0; i<paths.length(); i++)
+                present |= paths.getString(i).equals(library.archive.getAbsolutePath());
+            if (!present) paths.put(library.archive.getAbsolutePath());
+            if (paths.length() > 16) throw new IOException("最多启用 16 个库包");
+            File folder = Files.createTempDirectory(context.getCacheDir().toPath(), "library-test-").toFile();
+            try {
+                String script = PythonLibraryVerification.script(
+                        library.manifest.getJSONArray("imports").toString(),
+                        library.archive.getAbsolutePath());
+                Files.write(new File(folder, "verify.py").toPath(), script.getBytes(StandardCharsets.UTF_8));
+                JSONObject result = NativePythonBridge.execute(context, new JSONObject()
+                    .put("operation", "run").put("workspace", folder.getAbsolutePath())
+                    .put("entry", "verify.py").put("libraryPaths", paths));
+                if (!"ok".equals(result.optString("status")))
+                    throw new IOException(result.optString("stderr") + result.optString("message"));
+                // Recheck installed identity after executing untrusted library code.
+                boolean unchanged = false;
+                for (PythonLibraries.Library item : PythonLibraries.discover(context))
+                    if (item.id.equals(library.id) && library.identity.equals(item.identity)) unchanged = true;
+                if (!unchanged) throw new IOException("验证期间库已变更");
+                if (Thread.currentThread().isInterrupted()) throw new IOException("验证已取消");
+                PythonLibraries.setEnabled(context, library, true);
+                return "导入自检通过，已启用；下次运行或调试生效";
+            } finally { deleteRecursively(folder); }
+        });
+    }
+
     private final ILanguagePack.Stub binder = new ILanguagePack.Stub() {
         @Override public int getProtocolVersion() {
             checkCaller();
